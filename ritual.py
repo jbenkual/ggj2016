@@ -15,7 +15,12 @@ PODSize = (120,80)
 doorSize = (20,20)
 random.seed()
 
-score = [0,0,0,0,0]
+score = [20,0,0,0,0]
+# 0: Number of Colored in Pit
+# 1: # of Reds
+# 2: # of Greens
+# 3: # of Blues
+# 4: # of Browns
 
 t = 500 #miliseconds
 
@@ -80,13 +85,15 @@ class Cultist(object):
         self.b = blue
 
     def update(self):
-
         # if we won't move, don't calculate new vectors
         if abs(self.int_pos[0] - self.int_target[0]) < 2 and abs(self.int_pos[1] - self.int_target[1]) < 2 :
             if(self.assigned):
-                if(self.team == self.destination): # add point & remove if correct color & gate
+                if(self.team == 4 and self.destination >= 1 and self.destination <= 3):
                     score[self.team] += 1
-                    return True
+                elif(self.team < 4 and self.destination == 4):
+                    score[0] -= 1
+                elif(self.team == self.destination and self.team !=4): # add point & remove if correct color & gate
+                    score[self.team] += 1
                 return True # kill if wrong color at gate
             return False # arrived at destination, but not at a gate yet
 
@@ -228,12 +235,16 @@ while not quit:
 
     #Jobraldon
 
+    label = myfont.render("Lives " + str(score[0]), 1, (255,150,0))
+    s.blit(label, (100, 60))
     label = myfont.render("Red Cultists " + str(score[1]), 1, (255,0,0))
     s.blit(label, (100, 80))
     label = myfont.render("Green Cultists " + str(score[2]), 1, (0,102,0))
     s.blit(label, (100, 100))
     label = myfont.render("Blue Cultists " + str(score[3]), 1, (0,0,255))
     s.blit(label, (100, 120))
+    label = myfont.render("Infiltrators " + str(score[4]), 1, (155,95,55))
+    s.blit(label, (100, 140))
 
     pygame.display.flip() # RENDER THE SCREEN
     c.tick(60) # END OF FRAME CALCULATIONS
