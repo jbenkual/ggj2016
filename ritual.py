@@ -1,5 +1,23 @@
 import pygame
 import math
+import random
+
+screenWidth = 800
+screenHeight = 800
+numCultists = 0
+lineMaximum = 15
+
+door1 = (200,400)
+door2 = (600,400)
+door3 = (400,500)
+POD = (600,135)
+PODSize = (120,80)
+doorSize = (20,20)
+random.seed()
+
+score = [0,0,0,0]
+
+t = 500 #miliseconds
 
 # some simple vector helper functions, stolen from http://stackoverflow.com/a/4114962/142637
 def magnitude(v):
@@ -18,11 +36,17 @@ def normalize(v):
     vmag = magnitude(v)
     return [ v[i]/vmag  for i in range(len(v)) ]
 
-class Ship(object):
+class Cultist(object):
     def __init__(self):
-        self.x, self.y = (0, 0)
-        self.set_target((0, 0))
-        self.speed = 5.0
+        global numCultists
+        self.listIndex = numCultists
+        numCultists = numCultists + 1
+        self.x, self.y = (screenWidth / 2, 0)
+        self.update_target()
+        self.speed = 10.0
+        self.assigned = False
+        self.destination = 0
+        
 
     @property
     def pos(self):
@@ -42,43 +66,158 @@ class Ship(object):
     def int_target(self):
         return map(int, self.target)   
 
+    def update_target(self):
+        offset = (20 * self.listIndex)
+        self.set_target((round(screenWidth / 2), round(300 - offset)))
+
     def set_target(self, pos):
+        #print pos
         self.t_x, self.t_y = pos
 
+    def set_color(self, red, green, blue):
+        self.r = red
+        self.g = green
+        self.b = blue
+
     def update(self):
+
         # if we won't move, don't calculate new vectors
         if self.int_pos == self.int_target:
+            if(self.assigned):
+                if(self.team == self.destination):
+                    score[self.team] += 1
             return 
 
         target_vector = sub(self.target, self.pos) 
 
         # a threshold to stop moving if the distance is to small.
         # it prevents a 'flickering' between two points
-        if magnitude(target_vector) < 2: 
+        if magnitude(target_vector) < 10: 
             return
 
         # apply the ship's speed to the vector
         move_vector = [c * self.speed for c in normalize(target_vector)]
 
+        # Add side to side movement when "walking"
+
+
         # update position
         self.x, self.y = add(self.pos, move_vector)
 
     def draw(self, s):
-        pygame.draw.circle(s, (255, 0 ,0), self.int_pos, 2)
+        pygame.draw.circle(s, (self.r, self.g, self.b), self.int_pos, 5)
+
+
+def addCultist() :
+    if(numCultists >= lineMaximum):
+        return
+    cultist = Cultist()
+    cultists.append(cultist)
+    team = random.randint(1,5)
+    cultist.team = team
+    if(team == 1):
+        cultist.set_color(255,0,0)
+    elif(team == 2):
+        cultist.set_color(0,102,0)
+    elif(team == 3):
+        cultist.set_color(0,0,255)
+    else:
+        cultist.set_color(155,95,55)
+
+def moveToRoom(num):
+    global numCultists
+    cultists[0].assigned = True
+    cultists[0].destination = num
+    if(numCultists <= 0):
+        return
+    if(num == 666):
+        cultists[0].set_target(POD)
+    if(num == 1):
+        cultists[0].set_target(door1)
+    if(num == 2):
+        cultists[0].set_target(door2)
+    if(num == 3):
+        cultists[0].set_target(door3)
+
+    assigned.append(cultists.pop(0))
+    numCultists = numCultists - 1
+
+    for i in range(0, numCultists):
+        cultists[i].listIndex = i
+        cultists[i].update_target()
+
+
+
 
 pygame.init()
 quit = False
-s = pygame.display.set_mode((300, 300))
+s = pygame.display.set_mode((800, 600))
 c = pygame.time.Clock()
-ship = Ship()
+myfont = pygame.font.SysFont("monospace", 15)
+
+
+
+cultists = [] # create array for cultists
+assigned = [] # cultists going somewhere
+
+
+
+CREATE_CULTIST = pygame.USEREVENT+1
+pygame.time.set_timer(CREATE_CULTIST, t)
 
 while not quit:
     quit = pygame.event.get(pygame.QUIT)
-    if pygame.event.get(pygame.MOUSEBUTTONDOWN):
-        ship.set_target(pygame.mouse.get_pos())
+    #if pygame.event.get(pygame.MOUSEBUTTONDOWN):
+        #addCultist()
+        #cultist.set_target(pygame.mouse.get_pos())
+
+    for e in pygame.event.get():
+        if e.type == pygame.KEYDOWN:
+            #print e.key
+            if(e.key == 276): # right arrow
+                moveToRoom(1)
+            if(e.key == 275): # down arrow
+                moveToRoom(2)
+            if(e.key == 274): # left arrow
+                moveToRoom(3)
+            if(e.key == 273): # up arrow
+                moveToRoom(666)
+        if e.type == CREATE_CULTIST:
+            t = t - 2
+
+            if t < 250:
+                t = 50
+            pygame.time.set_timer(CREATE_CULTIST, t)
+            addCultist()
+
+
     pygame.event.poll()
-    ship.update()
-    s.fill((0, 0, 255))
-    ship.draw(s)
-    pygame.display.flip()
-    c.tick(60)
+    for i in range(0, numCultists):
+        cultists[i].update()
+
+    for a in assigned:
+        a.update()
+
+    s.fill((225,225,225))
+
+    for i in range(0, numCultists):
+        cultists[i].draw(s)
+
+    for a in assigned:
+        a.draw(s)
+
+    pygame.draw.rect(s, (255, 0 ,0), (door1[0]-doorSize[0]/2, door1[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
+    pygame.draw.rect(s, (0, 102 ,0), (door2[0]-doorSize[0]/2, door2[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
+    pygame.draw.rect(s, (0, 0 ,255), (door3[0]-doorSize[0]/2, door3[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
+    pygame.draw.rect(s, (0, 0 ,0), (POD[0]-PODSize[0]/2, POD[1]-PODSize[1]/2, PODSize[0], PODSize[1]), 5)
+
+
+
+
+
+    label = myfont.render("Red Cultists", score[0], (255,0,0))
+    screen.blit(label, (100, 100))
+
+    pygame.display.flip() # RENDER THE SCREEN
+    c.tick(60) # END OF FRAME CALCULATIONS
+    
