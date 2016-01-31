@@ -9,15 +9,18 @@ screenHeight = 800
 numCultists = 0
 lineMaximum = 15
 
-door1 = (200,400)
-door2 = (600,400)
-door3 = (400,500)
+door1 = (170,404)
+door2 = (645,404)
+door3 = (400,530)
 POD = (600,135)
 PODSize = (120,80)
 doorSize = (20,20)
 random.seed()
 
 score = [20,0,0,0,0]
+ritual1 = False
+ritual2 = False
+ritual3 = False
 # 0: Number of Colored in Pit
 # 1: # of Reds
 # 2: # of Greens
@@ -25,6 +28,17 @@ score = [20,0,0,0,0]
 # 4: # of Browns
 
 t = 500 #miliseconds
+
+def checkRitual():
+    if(score[1] >= 20 and !ritual1):
+        ritual1 = True
+        playMusic(1)
+    elif(score[2] >= 20 and !ritual2):
+        ritual2 = True
+        playMusic(2)
+    elif(score[3] >= 20 and !ritual3):
+        ritual3 = True
+        playMusic(3)
 
 # some simple vector helper functions, stolen from http://stackoverflow.com/a/4114962/142637
 def magnitude(v):
@@ -97,6 +111,7 @@ class Cultist(object):
                     score[self.team] += 1
                 elif(self.team < 4 and self.destination >= 1 and score[self.destination] > 0) :
                     score[self.destination] -= 1
+                checkRitual()
                 return True # kill if wrong color at gate
             return False # arrived at destination, but not at a gate yet
 
@@ -263,9 +278,9 @@ while not quit:
 
     s.fill((225,225,225))
     s.blit(background, (0,0))
-    s.blit(gate_1, (door1))
-    s.blit(gate_3, (door2))
-    s.blit(gate_2, (door3))
+    s.blit(gate_1, (door1[0] - 16, door1[1]-20))
+    s.blit(gate_3, (door2[0] - 16, door2[1]-20))
+    s.blit(gate_2, (door3[0] - 16, door3[1]-20))
 
     for i in range(0, numCultists):
         cultists[i].draw(s)
