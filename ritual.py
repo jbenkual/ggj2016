@@ -8,7 +8,7 @@ screenWidth = 800
 screenHeight = 800
 numCultists = 0
 lineMaximum = 15
-victoryAmount = 10
+victoryAmount = 15
 
 door1 = (170,404)
 door2 = (645,404)
