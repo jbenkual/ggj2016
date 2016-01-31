@@ -201,7 +201,9 @@ background = pygame.image.load('overall.png')
 gate_1 = pygame.image.load('gate-1.png')
 gate_2 = pygame.image.load('gate-2.png')
 gate_3 = pygame.image.load('gate-3.png')
-
+goblin_down = pygame.image.load('goblin-down.png')
+goblin_right = pygame.image.load('goblin-right.png')
+goblin_left = pygame.image.load('goblin-left.png')
 cultists = [] # create array for cultists
 assigned = [] # cultists going somewhere
 
@@ -209,6 +211,7 @@ CREATE_CULTIST = pygame.USEREVENT+1
 STOP_MUSIC = pygame.USEREVENT+2
 pygame.time.set_timer(CREATE_CULTIST, t)
 
+dirvar = 4
 
 def playMusic(num):
     global STOP_MUSIC
@@ -249,12 +252,16 @@ while not quit:
             #print e.key
             if(e.key == 276): # right arrow
                 moveToRoom(1)
+                dirvar = 1
             if(e.key == 275): # down arrow
                 moveToRoom(2)
+                dirvar = 2
             if(e.key == 274): # left arrow
                 moveToRoom(3)
+                dirvar = 3
             if(e.key == 273): # up arrow
                 moveToRoom(666)
+                dirvar = 4
         if e.type == CREATE_CULTIST:
             t = t - 1
 
@@ -287,6 +294,16 @@ while not quit:
 
     for a in assigned:
         a.draw(s)
+
+    if dirvar == 1:
+        s.blit(goblin_left, ((300,430)))
+    if dirvar == 2:
+        s.blit(goblin_right, ((500,430)))
+    if dirvar == 3:
+        s.blit(goblin_down, ((410,430)))
+    if dirvar == 4:
+        s.blit(goblin_right, ((510,135)))
+
 
     # pygame.draw.rect(s, (255, 0 ,0), (door1[0]-doorSize[0]/2, door1[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
     # pygame.draw.rect(s, (0, 102 ,0), (door2[0]-doorSize[0]/2, door2[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
