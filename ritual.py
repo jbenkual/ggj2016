@@ -273,10 +273,10 @@ while not quit:
     for a in assigned:
         a.draw(s)
 
-    pygame.draw.rect(s, (255, 0 ,0), (door1[0]-doorSize[0]/2, door1[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
-    pygame.draw.rect(s, (0, 102 ,0), (door2[0]-doorSize[0]/2, door2[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
-    pygame.draw.rect(s, (0, 0 ,255), (door3[0]-doorSize[0]/2, door3[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
-    pygame.draw.rect(s, (0, 0 ,0), (POD[0]-PODSize[0]/2, POD[1]-PODSize[1]/2, PODSize[0], PODSize[1]), 5)
+    # pygame.draw.rect(s, (255, 0 ,0), (door1[0]-doorSize[0]/2, door1[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
+    # pygame.draw.rect(s, (0, 102 ,0), (door2[0]-doorSize[0]/2, door2[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
+    # pygame.draw.rect(s, (0, 0 ,255), (door3[0]-doorSize[0]/2, door3[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
+    # pygame.draw.rect(s, (0, 0 ,0), (POD[0]-PODSize[0]/2, POD[1]-PODSize[1]/2, PODSize[0], PODSize[1]), 5)
 
     label = myfont.render("Lives " + str(score[0]), 1, (255,150,0))
     s.blit(label, (100, 60))
