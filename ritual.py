@@ -8,6 +8,7 @@ screenWidth = 800
 screenHeight = 800
 numCultists = 0
 lineMaximum = 15
+victoryAmount = 10
 
 door1 = (170,404)
 door2 = (645,404)
@@ -17,7 +18,7 @@ PODSize = (120,80)
 doorSize = (20,20)
 random.seed()
 
-score = [20,0,0,0,0]
+score = [50,0,0,0,0]
 ritual1 = False
 ritual2 = False
 ritual3 = False
@@ -27,16 +28,19 @@ ritual3 = False
 # 3: # of Blues
 # 4: # of Browns
 
-t = 500 #miliseconds
+t = 800 #miliseconds
 
 def checkRitual():
-    if(score[1] >= 20 and !ritual1):
+    global ritual1
+    global ritual2
+    global ritual3
+    if(score[1] >= victoryAmount and ritual1 == False):
         ritual1 = True
         playMusic(1)
-    elif(score[2] >= 20 and !ritual2):
+    elif(score[2] >= victoryAmount and ritual2 == False):
         ritual2 = True
         playMusic(2)
-    elif(score[3] >= 20 and !ritual3):
+    elif(score[3] >= victoryAmount and ritual3 == False):
         ritual3 = True
         playMusic(3)
 
@@ -56,6 +60,29 @@ def dot(u, v):
 def normalize(v):
     vmag = magnitude(v)
     return [ v[i]/vmag  for i in range(len(v)) ]
+
+
+class Blood(object):
+    def __init__(self):
+        self.x = 570 + random.randint(1,70)
+        self.y = 120 + random.randint(1,55)
+
+    @property
+    def pos(self):
+        return self.x, self.y
+
+    # for drawing, we need the position as tuple of ints
+    # so lets create a helper property
+    @property
+    def int_pos(self):
+        return map(int, self.pos)
+
+    def set_color(self, red, green, blue):
+        self.r = red
+        self.g = green
+        self.b = blue
+    def draw(self, s):
+        pygame.draw.circle(s, (self.r, self.g, self.b), self.int_pos, 1)
 
 class Cultist(object):
     def __init__(self):
@@ -111,6 +138,11 @@ class Cultist(object):
                     score[self.team] += 1
                 elif(self.team < 4 and self.destination >= 1 and score[self.destination] > 0) :
                     score[self.destination] -= 1
+                if self.destination == 4:
+                    bld = Blood()
+                    bld.set_color(self.r, self.g, self.b)
+                    bloodList.append(bld)
+
                 checkRitual()
                 return True # kill if wrong color at gate
             return False # arrived at destination, but not at a gate yet
@@ -147,13 +179,13 @@ def addCultist() :
         return
     cultist = Cultist()
     cultists.append(cultist)
-    team = random.randint(1,3)
+    team = random.randint(1,4)
     cultist.team = team
-    if(team == 1 and score[team] < 20):
+    if(team == 1 and score[team] < victoryAmount):
         cultist.set_color(255,0,0)
-    elif(team == 2 and score[team] < 20):
+    elif(team == 2 and score[team] < victoryAmount):
         cultist.set_color(0,102,0)
-    elif(team == 3 and score[team] < 20):
+    elif(team == 3 and score[team] < victoryAmount):
         cultist.set_color(0,0,255)
     else:
         cultist.set_color(155,95,55)
@@ -204,8 +236,10 @@ gate_3 = pygame.image.load('gate-3.png')
 goblin_down = pygame.image.load('goblin-down.png')
 goblin_right = pygame.image.load('goblin-right.png')
 goblin_left = pygame.image.load('goblin-left.png')
+monster = pygame.image.load('img/monster.jpg')
 cultists = [] # create array for cultists
 assigned = [] # cultists going somewhere
+bloodList = []
 
 CREATE_CULTIST = pygame.USEREVENT+1
 STOP_MUSIC = pygame.USEREVENT+2
@@ -224,12 +258,12 @@ def playMusic(num):
         pygame.mixer.music.stop()
         pygame.mixer.music.load('sound/SoylentLovesRobots.wav')
         pygame.mixer.music.play(0)
-        pygame.time.set_timer(STOP_MUSIC, 6000)
+        pygame.time.set_timer(STOP_MUSIC, 7000)
     if(num == 3):
         pygame.mixer.music.stop()
         pygame.mixer.music.load('sound/GregorianGameJam.wav')
         pygame.mixer.music.play(0)
-        pygame.time.set_timer(STOP_MUSIC, 6000)
+        pygame.time.set_timer(STOP_MUSIC, 7500)
 
 
 while not quit:
@@ -238,9 +272,21 @@ while not quit:
         #addCultist()
         #cultist.set_target(pygame.mouse.get_pos())
 
-    if(score[1] >= 20 and score[2] >= 20 and score[3] >= 20) :
+    if(score[1] >= victoryAmount and score[2] >= victoryAmount and score[3] >= victoryAmount) :
+        s.fill((225,225,225))
+        s.blit(monster, ((200,0)))
+        label = myfont.render("The Elder Gods are satisfied!", 1, (155,95,55))
+        s.blit(label, (250, 565))
+        pygame.display.flip() # RENDER THE SCREEN
+        c.tick(60) # END OF FRAME CALCULATIONS
         continue
     if score[4] >= 20 or score[0] <= 0:
+        s.fill((225,225,225))
+        s.blit(monster, ((200,0)))
+        label = myfont.render("The Elder Gods are displeased!", 1, (155,95,55))
+        s.blit(label, (250, 565))
+        pygame.display.flip() # RENDER THE SCREEN
+        c.tick(60) # END OF FRAME CALCULATIONS
         continue
 
     
@@ -286,14 +332,17 @@ while not quit:
     s.fill((225,225,225))
     s.blit(background, (0,0))
     s.blit(gate_1, (door1[0] - 16, door1[1]-20))
-    s.blit(gate_3, (door2[0] - 16, door2[1]-20))
-    s.blit(gate_2, (door3[0] - 16, door3[1]-20))
+    s.blit(gate_2, (door2[0] - 16, door2[1]-20))
+    s.blit(gate_3, (door3[0] - 16, door3[1]-20))
 
     for i in range(0, numCultists):
         cultists[i].draw(s)
 
     for a in assigned:
         a.draw(s)
+
+    for b in bloodList:
+        b.draw(s)
 
     if dirvar == 1:
         s.blit(goblin_left, ((300,430)))
