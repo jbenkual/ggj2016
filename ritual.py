@@ -1,6 +1,8 @@
 import pygame
 import math
 import random
+import os
+import sys
 
 screenWidth = 800
 screenHeight = 800
@@ -173,7 +175,10 @@ s = pygame.display.set_mode((800, 600))
 c = pygame.time.Clock()
 myfont = pygame.font.SysFont("monospace", 15)
 
-
+background = pygame.image.load('overall.png')
+gate_1 = pygame.image.load('gate-1.png')
+gate_2 = pygame.image.load('gate-2.png')
+gate_3 = pygame.image.load('gate-3.png')
 
 cultists = [] # create array for cultists
 assigned = [] # cultists going somewhere
@@ -221,6 +226,10 @@ while not quit:
             assigned.pop(count)
 
     s.fill((225,225,225))
+    s.blit(background, (0,0))
+    s.blit(gate_1, (door1))
+    s.blit(gate_3, (door2))
+    s.blit(gate_2, (door3))
 
     for i in range(0, numCultists):
         cultists[i].draw(s)
