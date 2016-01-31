@@ -1,4 +1,4 @@
-Jobraldo
+Jobraldon
 
 This game was written using Python and pygame
 You will need to install both to play the game
