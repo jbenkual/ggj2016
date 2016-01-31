@@ -18,7 +18,7 @@ PODSize = (120,80)
 doorSize = (20,20)
 random.seed()
 
-score = [50,0,0,0,0]
+score = [20,0,0,0,0]
 ritual1 = False
 ritual2 = False
 ritual3 = False
@@ -28,7 +28,7 @@ ritual3 = False
 # 3: # of Blues
 # 4: # of Browns
 
-t = 800 #miliseconds
+t = 600 #miliseconds
 
 def checkRitual():
     global ritual1
