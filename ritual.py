@@ -54,7 +54,6 @@ class Cultist(object):
         self.assigned = False
         self.destination = 0
         
-
     @property
     def pos(self):
         return self.x, self.y
@@ -96,6 +95,8 @@ class Cultist(object):
                     score[0] -= 1
                 elif(self.team == self.destination and self.team !=4): # add point & remove if correct color & gate
                     score[self.team] += 1
+                elif(self.team < 4 and self.destination >= 1 and score[self.destination] > 0) :
+                    score[self.destination] -= 1
                 return True # kill if wrong color at gate
             return False # arrived at destination, but not at a gate yet
 
@@ -125,16 +126,19 @@ class Cultist(object):
 
 def addCultist() :
     if(numCultists >= lineMaximum):
+        for i in range(1,10):
+            room = random.randint(1,3)
+            moveToRoom(room)
         return
     cultist = Cultist()
     cultists.append(cultist)
-    team = random.randint(1,5)
+    team = random.randint(1,3)
     cultist.team = team
-    if(team == 1):
+    if(team == 1 and score[team] < 20):
         cultist.set_color(255,0,0)
-    elif(team == 2):
+    elif(team == 2 and score[team] < 20):
         cultist.set_color(0,102,0)
-    elif(team == 3):
+    elif(team == 3 and score[team] < 20):
         cultist.set_color(0,0,255)
     else:
         cultist.set_color(155,95,55)
@@ -145,11 +149,10 @@ def moveToRoom(num):
     if(numCultists <= 0): #exit if list is empty
         return
 
-
     cultists[0].assigned = True
     cultists[0].destination = num
 
-    if(num == 666):
+    if(num == 666 or num == 4):
         cultists[0].set_target(POD)
         cultists[0].destination = 4
     if(num == 1):
@@ -166,15 +169,19 @@ def moveToRoom(num):
         cultists[i].listIndex = i
         cultists[i].update_target()
 
-
-
-
 pygame.init()
+pygame.mixer.init()
+
+#load sounds
+
+
 quit = False
 s = pygame.display.set_mode((800, 600))
 c = pygame.time.Clock()
 myfont = pygame.font.SysFont("monospace", 15)
 
+musicPlaying = True;
+gamePaused = True;
 background = pygame.image.load('overall.png')
 gate_1 = pygame.image.load('gate-1.png')
 gate_2 = pygame.image.load('gate-2.png')
@@ -183,10 +190,29 @@ gate_3 = pygame.image.load('gate-3.png')
 cultists = [] # create array for cultists
 assigned = [] # cultists going somewhere
 
-
-
 CREATE_CULTIST = pygame.USEREVENT+1
+STOP_MUSIC = pygame.USEREVENT+2
 pygame.time.set_timer(CREATE_CULTIST, t)
+
+
+def playMusic(num):
+    global STOP_MUSIC
+    if(num == 1):
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load('sound/GameJamTribe.wav')
+        pygame.mixer.music.play(0)
+        pygame.time.set_timer(STOP_MUSIC, 6000)
+    if(num == 2):
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load('sound/SoylentLovesRobots.wav')
+        pygame.mixer.music.play(0)
+        pygame.time.set_timer(STOP_MUSIC, 6000)
+    if(num == 3):
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load('sound/GregorianGameJam.wav')
+        pygame.mixer.music.play(0)
+        pygame.time.set_timer(STOP_MUSIC, 6000)
+
 
 while not quit:
     quit = pygame.event.get(pygame.QUIT)
@@ -194,8 +220,17 @@ while not quit:
         #addCultist()
         #cultist.set_target(pygame.mouse.get_pos())
 
+    if(score[1] >= 20 and score[2] >= 20 and score[3] >= 20) :
+        continue
+    if score[4] >= 20 or score[0] <= 0:
+        continue
+
+    
     for e in pygame.event.get():
+        if e.type == STOP_MUSIC:
+            pygame.mixer.music.stop()
         if e.type == pygame.KEYDOWN:
+            gamePaused == False;
             #print e.key
             if(e.key == 276): # right arrow
                 moveToRoom(1)
@@ -212,9 +247,10 @@ while not quit:
                 t = 50
             pygame.time.set_timer(CREATE_CULTIST, t)
             addCultist()
-
-
     pygame.event.poll()
+    # if(gamePaused == True) :
+    #     continue
+
     for i in cultists:
         i.update()
 
@@ -241,8 +277,6 @@ while not quit:
     pygame.draw.rect(s, (0, 102 ,0), (door2[0]-doorSize[0]/2, door2[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
     pygame.draw.rect(s, (0, 0 ,255), (door3[0]-doorSize[0]/2, door3[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
     pygame.draw.rect(s, (0, 0 ,0), (POD[0]-PODSize[0]/2, POD[1]-PODSize[1]/2, PODSize[0], PODSize[1]), 5)
-
-    #Jobraldon
 
     label = myfont.render("Lives " + str(score[0]), 1, (255,150,0))
     s.blit(label, (100, 60))
