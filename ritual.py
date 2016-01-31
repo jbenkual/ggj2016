@@ -15,7 +15,7 @@ PODSize = (120,80)
 doorSize = (20,20)
 random.seed()
 
-score = [0,0,0,0]
+score = [0,0,0,0,0]
 
 t = 500 #miliseconds
 
@@ -82,18 +82,23 @@ class Cultist(object):
     def update(self):
 
         # if we won't move, don't calculate new vectors
-        if self.int_pos == self.int_target:
+        if abs(self.int_pos[0] - self.int_target[0]) < 2 and abs(self.int_pos[1] - self.int_target[1]) < 2 :
             if(self.assigned):
-                if(self.team == self.destination):
+                if(self.team == self.destination): # add point & remove if correct color & gate
                     score[self.team] += 1
-            return 
+                    return True
+                return True # kill if wrong color at gate
+            return False # arrived at destination, but not at a gate yet
 
         target_vector = sub(self.target, self.pos) 
 
         # a threshold to stop moving if the distance is to small.
         # it prevents a 'flickering' between two points
-        if magnitude(target_vector) < 10: 
-            return
+        if magnitude(target_vector) < 10: # slow down when close to destination
+            self.speed = 1
+
+        if magnitude(target_vector) < 1: 
+            return False
 
         # apply the ship's speed to the vector
         move_vector = [c * self.speed for c in normalize(target_vector)]
@@ -103,6 +108,7 @@ class Cultist(object):
 
         # update position
         self.x, self.y = add(self.pos, move_vector)
+        return False
 
     def draw(self, s):
         pygame.draw.circle(s, (self.r, self.g, self.b), self.int_pos, 5)
@@ -123,15 +129,20 @@ def addCultist() :
         cultist.set_color(0,0,255)
     else:
         cultist.set_color(155,95,55)
+        cultist.team = 4
 
 def moveToRoom(num):
     global numCultists
+    if(numCultists <= 0): #exit if list is empty
+        return
+
+
     cultists[0].assigned = True
     cultists[0].destination = num
-    if(numCultists <= 0):
-        return
+
     if(num == 666):
         cultists[0].set_target(POD)
+        cultists[0].destination = 4
     if(num == 1):
         cultists[0].set_target(door1)
     if(num == 2):
@@ -183,7 +194,7 @@ while not quit:
             if(e.key == 273): # up arrow
                 moveToRoom(666)
         if e.type == CREATE_CULTIST:
-            t = t - 2
+            t = t - 1
 
             if t < 250:
                 t = 50
@@ -192,11 +203,15 @@ while not quit:
 
 
     pygame.event.poll()
-    for i in range(0, numCultists):
-        cultists[i].update()
+    for i in cultists:
+        i.update()
 
-    for a in assigned:
-        a.update()
+    count = len(assigned)
+    while (count > 0) :
+        count = count - 1
+        remove = assigned[count].update()
+        if(remove):
+            assigned.pop(count)
 
     s.fill((225,225,225))
 
@@ -211,12 +226,14 @@ while not quit:
     pygame.draw.rect(s, (0, 0 ,255), (door3[0]-doorSize[0]/2, door3[1]-doorSize[1]/2, doorSize[0], doorSize[1]), 5)
     pygame.draw.rect(s, (0, 0 ,0), (POD[0]-PODSize[0]/2, POD[1]-PODSize[1]/2, PODSize[0], PODSize[1]), 5)
 
+    #Jobraldon
 
-
-
-
-    label = myfont.render("Red Cultists", score[0], (255,0,0))
-    screen.blit(label, (100, 100))
+    label = myfont.render("Red Cultists " + str(score[1]), 1, (255,0,0))
+    s.blit(label, (100, 80))
+    label = myfont.render("Green Cultists " + str(score[2]), 1, (0,102,0))
+    s.blit(label, (100, 100))
+    label = myfont.render("Blue Cultists " + str(score[3]), 1, (0,0,255))
+    s.blit(label, (100, 120))
 
     pygame.display.flip() # RENDER THE SCREEN
     c.tick(60) # END OF FRAME CALCULATIONS
